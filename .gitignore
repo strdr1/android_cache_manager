@@ -25,7 +25,16 @@ local.properties
 build-reports.zip
 /.reports/
 /.reports2/
+/.reports3/
+/.reports4/
 build-reports (2).zip
+build-reports (3).zip
+build-reports (4).zip
+build-reports (5).zip
+build-reports (6).zip
+/build_logs_extract/
+/build_logs_extract2/
+build-reports*.zip
 
 # Generated
 captures/
