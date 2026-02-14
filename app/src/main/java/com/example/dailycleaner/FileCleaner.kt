@@ -69,12 +69,19 @@ object FileCleaner {
         }
         val dataDir = File(root, "Android/data")
         val mediaDir = File(root, "Android/media")
-        if (hasAllFilesAccess(context)) {
-            if (config.androidDataCaches && dataDir.exists()) {
-                data += cleanPerAppCache(dataDir)
+        val canFiles = hasAllFilesAccess(context)
+        val canListData = canFiles && dataDir.exists() && (runCatching { dataDir.listFiles() }.getOrNull() != null)
+        val canListMedia = canFiles && mediaDir.exists() && (runCatching { mediaDir.listFiles() }.getOrNull() != null)
+        if (config.androidDataCaches) {
+            data += when {
+                canListData -> cleanPerAppCache(dataDir)
+                else -> SAFCleaner.cleanAndroidData(context, Prefs.getDataTreeUri(context))
             }
-            if (config.androidMediaCaches && mediaDir.exists()) {
-                media += deleteByPatterns(mediaDir, setOf("cache", "temp", "tmp"))
+        }
+        if (config.androidMediaCaches) {
+            media += when {
+                canListMedia -> deleteByPatterns(mediaDir, setOf("cache", "temp", "tmp"))
+                else -> SAFCleaner.cleanAndroidMedia(context, Prefs.getMediaTreeUri(context))
             }
         }
         if (config.appCache) {

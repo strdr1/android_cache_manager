@@ -101,12 +101,28 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, OnboardingActivity::class.java))
             return
         }
+        ensureDataMediaAccessIfNeeded()
     }
 
     private fun schedule() {
         val hours = Prefs.getIntervalHours(this)
         val req = PeriodicWorkRequestBuilder<DailyCleanWorker>(hours, TimeUnit.HOURS).build()
         WorkManager.getInstance(this).enqueueUniquePeriodicWork("daily_clean", ExistingPeriodicWorkPolicy.UPDATE, req)
+    }
+
+    private fun ensureDataMediaAccessIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && android.os.Environment.isExternalStorageManager()) {
+            val root = android.os.Environment.getExternalStorageDirectory()
+            val dataDir = java.io.File(root, "Android/data")
+            val mediaDir = java.io.File(root, "Android/media")
+            val canListData = dataDir.exists() && (runCatching { dataDir.listFiles() }.getOrNull() != null)
+            val canListMedia = mediaDir.exists() && (runCatching { mediaDir.listFiles() }.getOrNull() != null)
+            if (!canListData && Prefs.getDataTreeUri(this) == null) {
+                openTreePicker(initialDoc = "primary:Android/data") { pickDataTree.launch(it) }
+            } else if (!canListMedia && Prefs.getMediaTreeUri(this) == null) {
+                openTreePicker(initialDoc = "primary:Android/media") { pickMediaTree.launch(it) }
+            }
+        }
     }
 
     private fun cancel() {
