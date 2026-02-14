@@ -44,30 +44,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/request_access"/>
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginTop="8dp"
-                        android:gravity="center">
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnPickData"
-                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/pick_android_data"/>
-                        <View
-                            android:layout_width="8dp"
-                            android:layout_height="0dp"/>
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnPickMedia"
-                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/pick_android_media"/>
-                    </LinearLayout>
+                    <!-- удалены кнопки выбора SAF; всё работает автоматически -->
                     <com.google.android.material.checkbox.MaterialCheckBox
                         android:id="@+id/chkSchedule"
                         android:layout_width="match_parent"
