@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         txt = findViewById(R.id.txtResult)
         val btnPermission = findViewById<MaterialButton>(R.id.btnPermission)
-        val switchSchedule = findViewById<MaterialSwitch>(R.id.switchSchedule)
+        val switchSchedule = findViewById<MaterialCheckBox>(R.id.chkSchedule)
         val btnClean = findViewById<MaterialButton>(R.id.btnClean)
         val btnLog = findViewById<MaterialButton>(R.id.btnLog)
         val spInterval = findViewById<AutoCompleteTextView>(R.id.spInterval)
@@ -146,10 +146,16 @@ class MainActivity : AppCompatActivity() {
     private fun openTreePicker(initialDoc: String, launch: (Intent) -> Unit) {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+        intent.putExtra("android.provider.extra.SHOW_ADVANCED", true)
+        intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
         if (Build.VERSION.SDK_INT >= 26) {
             val initUri = DocumentsContract.buildTreeDocumentUri("com.android.externalstorage.documents", initialDoc)
             intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, initUri)
         }
+        // Попробуем принудительно открыть системный DocumentsUI (обходит файловый менеджер производителя)
+        try {
+            intent.setPackage("com.android.documentsui")
+        } catch (_: Exception) { /* ignore */ }
         launch(intent)
     }
 
