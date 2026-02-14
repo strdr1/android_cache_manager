@@ -53,6 +53,16 @@ jobs:
           name: app-debug
           path: app/build/outputs/apk/debug/*.apk
 
+      - name: Upload build reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-reports
+          path: |
+            app/build/reports/**
+            **/build/outputs/logs/**
+          retention-days: 7
+
       - name: Create GitHub Release with APK
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
