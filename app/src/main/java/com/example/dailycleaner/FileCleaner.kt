@@ -1,13 +1,15 @@
 package com.example.dailycleaner
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Environment
+import androidx.core.content.ContextCompat
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import java.util.concurrent.atomic.AtomicLong
 
 data class CleanerConfig(
     val thumbnails: Boolean,
@@ -42,10 +44,12 @@ data class CleanReport(
 }
 
 object FileCleaner {
-    fun hasAllFilesAccess(): Boolean {
+    fun hasAllFilesAccess(context: Context): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             Environment.isExternalStorageManager()
-        } else true
+        } else {
+            ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+        }
     }
 
     fun cleanAccessibleJunk(context: Context, config: CleanerConfig): CleanReport {
@@ -63,7 +67,7 @@ object FileCleaner {
         if (config.downloadTemps) {
             dltmp += deleteByExtensions(File(root, "Download"), setOf("tmp", "log", "cache"))
         }
-        if (hasAllFilesAccess()) {
+        if (hasAllFilesAccess(context)) {
             if (config.androidDataCaches) {
                 data += cleanPerAppCache(File(root, "Android/data"))
             }

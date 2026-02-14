@@ -9,6 +9,7 @@ import android.provider.Settings
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -22,6 +23,10 @@ import com.google.android.material.materialswitch.MaterialSwitch
 class MainActivity : AppCompatActivity() {
     private lateinit var txt: TextView
     private val notifPerm = registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
+    private val storagePerm = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+        if (isGranted) Toast.makeText(this, "Доступ к файлам разрешен", Toast.LENGTH_SHORT).show()
+        else Toast.makeText(this, "Доступ к файлам отклонен", Toast.LENGTH_SHORT).show()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,9 +61,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnClean.setOnClickListener {
+            if (!FileCleaner.hasAllFilesAccess(this)) {
+                Toast.makeText(this, "Нет доступа к файлам! Нажмите 'Разрешить доступ'", Toast.LENGTH_LONG).show()
+            }
             val report = FileCleaner.cleanAccessibleJunk(this, readConfigAndPersist(chkThumbs, chkDownload, chkData, chkMedia, chkApp))
             LogStore.append(this, report)
             txt.text = getString(R.string.last_result, human(report.totalFreed))
+            if (report.totalFreed == 0L && FileCleaner.hasAllFilesAccess(this)) {
+                 Toast.makeText(this, "Мусор не найден или доступ ограничен системой (Android 11+)", Toast.LENGTH_SHORT).show()
+            }
         }
 
         switchSchedule.setOnCheckedChangeListener { _, isChecked ->
@@ -93,10 +104,18 @@ class MainActivity : AppCompatActivity() {
 
     private fun requestAllFilesAccess() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            if (!android.os.Environment.isExternalStorageManager()) {
+            try {
                 val uri = Uri.parse("package:$packageName")
                 startActivity(Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri))
+            } catch (e: Exception) {
+                try {
+                    startActivity(Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION))
+                } catch (e2: Exception) {
+                    Toast.makeText(this, "Не удалось открыть настройки доступа", Toast.LENGTH_SHORT).show()
+                }
             }
+        } else {
+            storagePerm.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
         }
     }
 
