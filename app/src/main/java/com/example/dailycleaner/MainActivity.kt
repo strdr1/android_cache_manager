@@ -1,11 +1,13 @@
 package com.example.dailycleaner
 
 import android.Manifest
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.provider.DocumentsContract
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.TextView
@@ -27,7 +29,24 @@ class MainActivity : AppCompatActivity() {
         if (isGranted) Toast.makeText(this, "Доступ к файлам разрешен", Toast.LENGTH_SHORT).show()
         else Toast.makeText(this, "Доступ к файлам отклонен", Toast.LENGTH_SHORT).show()
     }
-    // SAF не используется — автоматическая очистка с MANAGE_EXTERNAL_STORAGE
+    private val pickDataTree = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { res ->
+        if (res.resultCode == Activity.RESULT_OK) {
+            val uri = res.data?.data ?: return@registerForActivityResult
+            val flags = (Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+            contentResolver.takePersistableUriPermission(uri, flags)
+            Prefs.setDataTreeUri(this, uri.toString())
+            Toast.makeText(this, "Подключена папка Android/data", Toast.LENGTH_SHORT).show()
+        }
+    }
+    private val pickMediaTree = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { res ->
+        if (res.resultCode == Activity.RESULT_OK) {
+            val uri = res.data?.data ?: return@registerForActivityResult
+            val flags = (Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+            contentResolver.takePersistableUriPermission(uri, flags)
+            Prefs.setMediaTreeUri(this, uri.toString())
+            Toast.makeText(this, "Подключена папка Android/media", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -146,7 +165,20 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // нет SAF
+    private fun openTreePicker(initialDoc: String, launch: (Intent) -> Unit) {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+        intent.putExtra("android.provider.extra.SHOW_ADVANCED", true)
+        intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
+        if (Build.VERSION.SDK_INT >= 26) {
+            val initUri = DocumentsContract.buildTreeDocumentUri("com.android.externalstorage.documents", initialDoc)
+            intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, initUri)
+        }
+        try {
+            intent.setPackage("com.android.documentsui")
+        } catch (_: Exception) { /* ignore */ }
+        launch(intent)
+    }
 
     // онбординг берет на себя запрос прав
 
