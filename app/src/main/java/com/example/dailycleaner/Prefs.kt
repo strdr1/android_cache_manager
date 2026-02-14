@@ -14,6 +14,7 @@ object Prefs {
     private const val KEY_INTERVAL_H = "interval_h"
     private const val KEY_URI_DATA = "uri_data"
     private const val KEY_URI_MEDIA = "uri_media"
+    private const val KEY_ONBOARD = "onboard_done"
 
     fun prefs(ctx: Context): SharedPreferences = ctx.getSharedPreferences(NAME, Context.MODE_PRIVATE)
 
@@ -48,4 +49,6 @@ object Prefs {
     fun getDataTreeUri(ctx: Context): String? = prefs(ctx).getString(KEY_URI_DATA, null)
     fun setMediaTreeUri(ctx: Context, uri: String) { prefs(ctx).edit().putString(KEY_URI_MEDIA, uri).apply() }
     fun getMediaTreeUri(ctx: Context): String? = prefs(ctx).getString(KEY_URI_MEDIA, null)
+    fun setOnboardDone(ctx: Context, done: Boolean) { prefs(ctx).edit().putBoolean(KEY_ONBOARD, done).apply() }
+    fun isOnboardDone(ctx: Context): Boolean = prefs(ctx).getBoolean(KEY_ONBOARD, false)
 }

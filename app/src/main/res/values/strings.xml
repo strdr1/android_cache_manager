@@ -20,4 +20,12 @@
     <string name="pick_android_data">Выбрать Android/data</string>
     <string name="pick_android_media">Выбрать Android/media</string>
     <string name="auto_clean_label">Автоочистка</string>
+    <string name="onb_title">Необходимые разрешения</string>
+    <string name="onb_notif">Разрешить уведомления</string>
+    <string name="onb_all_files">Полный доступ к файлам</string>
+    <string name="onb_grant">Выдать</string>
+    <string name="onb_done">Готово</string>
+    <string name="onb_data">Подключить Android/data</string>
+    <string name="onb_media">Подключить Android/media</string>
+    <string name="onb_not_needed">Не требуется на этой версии Android</string>
 </resources>

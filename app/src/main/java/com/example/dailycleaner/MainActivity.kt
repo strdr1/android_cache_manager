@@ -118,7 +118,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        askAllPermissionsAtEntry()
+        if (!Prefs.isOnboardDone(this)) {
+            startActivity(Intent(this, OnboardingActivity::class.java))
+            return
+        }
     }
 
     private fun schedule() {
@@ -164,29 +167,7 @@ class MainActivity : AppCompatActivity() {
         launch(intent)
     }
 
-    private fun askAllPermissionsAtEntry() {
-        if (Build.VERSION.SDK_INT >= 33) {
-            notifPerm.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            if (!android.os.Environment.isExternalStorageManager()) {
-                requestAllFilesAccess()
-            }
-        } else {
-            storagePerm.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        }
-        val dataUri = Prefs.getDataTreeUri(this)
-        val mediaUri = Prefs.getMediaTreeUri(this)
-        if (dataUri == null) {
-            window.decorView.post {
-                openTreePicker(initialDoc = "primary:Android/data") { pickDataTree.launch(it) }
-            }
-        } else if (mediaUri == null) {
-            window.decorView.post {
-                openTreePicker(initialDoc = "primary:Android/media") { pickMediaTree.launch(it) }
-            }
-        }
-    }
+    // онбординг берет на себя запрос прав
 
     private fun readConfigAndPersist(chkThumbs: MaterialCheckBox, chkDownload: MaterialCheckBox, chkData: MaterialCheckBox, chkMedia: MaterialCheckBox, chkApp: MaterialCheckBox): CleanerConfig {
         val c = CleanerConfig(
