@@ -40,7 +40,7 @@
                     android:padding="16dp">
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnPermission"
-                        style="@style/Widget.MaterialComponents.Button.Filled"
+                        style="?attr/materialButtonStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/request_access"/>
@@ -79,7 +79,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/what_to_clean"
-                        android:textAppearance="@style/TextAppearance.MaterialComponents.TitleMedium"/>
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"/>
 
                     <com.google.android.material.checkbox.MaterialCheckBox
                         android:id="@+id/chkThumbs"
@@ -126,7 +126,7 @@
                     android:padding="16dp">
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnClean"
-                        style="@style/Widget.MaterialComponents.Button.Filled"
+                        style="?attr/materialButtonStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/clean_now"/>
