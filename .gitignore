@@ -22,6 +22,8 @@ local.properties
 # Apk/Bundle
 *.apk
 *.aab
+build-reports.zip
+/.reports/
 
 # Generated
 captures/
