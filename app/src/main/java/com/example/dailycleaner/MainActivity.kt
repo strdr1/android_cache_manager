@@ -135,18 +135,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun ensureDataMediaAccessIfNeeded() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && android.os.Environment.isExternalStorageManager()) {
-            val root = android.os.Environment.getExternalStorageDirectory()
-            val dataDir = java.io.File(root, "Android/data")
-            val mediaDir = java.io.File(root, "Android/media")
-            val canListData = dataDir.exists() && (runCatching { dataDir.listFiles() }.getOrNull() != null)
-            val canListMedia = mediaDir.exists() && (runCatching { mediaDir.listFiles() }.getOrNull() != null)
-            if (!canListData && Prefs.getDataTreeUri(this) == null) {
-                openTreePicker(initialDoc = "primary:Android/data") { pickDataTree.launch(it) }
-            } else if (!canListMedia && Prefs.getMediaTreeUri(this) == null) {
-                openTreePicker(initialDoc = "primary:Android/media") { pickMediaTree.launch(it) }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !android.os.Environment.isExternalStorageManager()) {
+            if (!Prefs.wasWarnedLimitedAccess(this)) {
+                Prefs.setWarnedLimitedAccess(this, true)
+                Toast.makeText(this, "Без полного доступа очистка Android/data и Android/media недоступна", Toast.LENGTH_LONG).show()
             }
+            return
         }
+        // С полным доступом работаем без SAF; если OEM блокирует, пропускаем эти директории
     }
 
     private fun cancel() {

@@ -16,6 +16,7 @@ object Prefs {
     private const val KEY_URI_MEDIA = "uri_media"
     private const val KEY_ONBOARD = "onboard_done"
     private const val KEY_ASKED_ALL = "asked_all_files_once"
+    private const val KEY_WARNED_LIMIT = "warned_limited_access"
 
     fun prefs(ctx: Context): SharedPreferences = ctx.getSharedPreferences(NAME, Context.MODE_PRIVATE)
 
@@ -55,4 +56,6 @@ object Prefs {
 
     fun setAskedAllFilesOnce(ctx: Context, asked: Boolean) { prefs(ctx).edit().putBoolean(KEY_ASKED_ALL, asked).apply() }
     fun wasAskedAllFilesOnce(ctx: Context): Boolean = prefs(ctx).getBoolean(KEY_ASKED_ALL, false)
+    fun setWarnedLimitedAccess(ctx: Context, warned: Boolean) { prefs(ctx).edit().putBoolean(KEY_WARNED_LIMIT, warned).apply() }
+    fun wasWarnedLimitedAccess(ctx: Context): Boolean = prefs(ctx).getBoolean(KEY_WARNED_LIMIT, false)
 }
