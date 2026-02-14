@@ -2,9 +2,9 @@ package com.example.dailycleaner
 
 import android.os.Bundle
 import android.widget.TextView
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 
-class LogActivity : ComponentActivity() {
+class LogActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val tv = TextView(this)
