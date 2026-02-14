@@ -76,12 +76,16 @@
                         android:gravity="center_vertical"
                         android:paddingTop="4dp"
                         android:paddingBottom="4dp">
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/auto_clean_label"/>
                         <com.google.android.material.materialswitch.MaterialSwitch
                             android:id="@+id/switchSchedule"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            app:showText="true"
-                            android:text="@string/auto_clean_label"/>
+                            app:showText="false"/>
                     </LinearLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
