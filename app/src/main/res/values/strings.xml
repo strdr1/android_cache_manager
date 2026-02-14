@@ -16,4 +16,5 @@
     <string name="interval_1d">Раз в день</string>
     <string name="interval_3d">Раз в 3 дня</string>
     <string name="interval_7d">Раз в неделю</string>
+    <string name="interval_label">Интервал</string>
 </resources>

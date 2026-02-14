@@ -6,10 +6,8 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.widget.Button
-import android.widget.CheckBox
-import android.widget.Spinner
-import android.widget.Switch
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
@@ -17,6 +15,9 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.checkbox.MaterialCheckBox
+import com.google.android.material.materialswitch.MaterialSwitch
 
 class MainActivity : ComponentActivity() {
     private lateinit var txt: TextView
@@ -26,20 +27,21 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         txt = findViewById(R.id.txtResult)
-        val btnPermission = findViewById<Button>(R.id.btnPermission)
-        val switchSchedule = findViewById<Switch>(R.id.switchSchedule)
-        val btnClean = findViewById<Button>(R.id.btnClean)
-        val btnLog = findViewById<Button>(R.id.btnLog)
-        val spInterval = findViewById<Spinner>(R.id.spInterval)
-        val chkThumbs = findViewById<CheckBox>(R.id.chkThumbs)
-        val chkDownload = findViewById<CheckBox>(R.id.chkDownload)
-        val chkData = findViewById<CheckBox>(R.id.chkData)
-        val chkMedia = findViewById<CheckBox>(R.id.chkMedia)
-        val chkApp = findViewById<CheckBox>(R.id.chkApp)
+        val btnPermission = findViewById<MaterialButton>(R.id.btnPermission)
+        val switchSchedule = findViewById<MaterialSwitch>(R.id.switchSchedule)
+        val btnClean = findViewById<MaterialButton>(R.id.btnClean)
+        val btnLog = findViewById<MaterialButton>(R.id.btnLog)
+        val spInterval = findViewById<AutoCompleteTextView>(R.id.spInterval)
+        val chkThumbs = findViewById<MaterialCheckBox>(R.id.chkThumbs)
+        val chkDownload = findViewById<MaterialCheckBox>(R.id.chkDownload)
+        val chkData = findViewById<MaterialCheckBox>(R.id.chkData)
+        val chkMedia = findViewById<MaterialCheckBox>(R.id.chkMedia)
+        val chkApp = findViewById<MaterialCheckBox>(R.id.chkApp)
 
-        spInterval.adapter = android.widget.ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, listOf(getString(R.string.interval_6h), getString(R.string.interval_12h), getString(R.string.interval_1d), getString(R.string.interval_3d), getString(R.string.interval_7d)))
+        val intervals = listOf(getString(R.string.interval_6h), getString(R.string.interval_12h), getString(R.string.interval_1d), getString(R.string.interval_3d), getString(R.string.interval_7d))
+        spInterval.setAdapter(ArrayAdapter(this, android.R.layout.simple_list_item_1, intervals))
         val hoursSaved = Prefs.getIntervalHours(this)
-        spInterval.setSelection(indexForHours(hoursSaved))
+        spInterval.setText(intervals[indexForHours(hoursSaved)], false)
 
         val cfg = Prefs.loadConfig(this)
         chkThumbs.isChecked = cfg.thumbnails
@@ -63,14 +65,11 @@ class MainActivity : ComponentActivity() {
             else cancel()
         }
 
-        spInterval.setOnItemSelectedListener(object : android.widget.AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
-                val h = hoursForIndex(position)
-                Prefs.setIntervalHours(this@MainActivity, h)
-                if (switchSchedule.isChecked) schedule()
-            }
-            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
-        })
+        spInterval.setOnItemClickListener { _, _, position, _ ->
+            val h = hoursForIndex(position)
+            Prefs.setIntervalHours(this@MainActivity, h)
+            if (switchSchedule.isChecked) schedule()
+        }
 
         btnLog.setOnClickListener {
             startActivity(Intent(this, LogActivity::class.java))
