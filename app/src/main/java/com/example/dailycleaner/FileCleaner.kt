@@ -80,11 +80,27 @@ object FileCleaner {
 
     private fun cleanPerAppCache(dataDir: File): Long {
         var freed = 0L
-        if (dataDir.exists()) {
-            dataDir.listFiles()?.forEach { app ->
-                val cache = File(app, "cache")
-                if (cache.exists()) freed += deleteDir(cache)
+        if (!dataDir.exists()) return 0L
+        val dirNames = setOf(
+            "cache","caches","tmp","temp",".tmp",".temp",
+            "okhttp","glide_cache","coil","coil_cache",
+            "image_cache","video_cache","mediacache","exoplayer",
+            "thumb","thumbs","thumbnails",".thumbnails"
+        )
+        val fileExts = setOf("tmp","log","cache","bak","old","part","partial","crdownload")
+        dataDir.listFiles()?.forEach { app ->
+            // классический cache
+            val cache = File(app, "cache")
+            if (cache.exists()) freed += deleteDir(cache)
+            // часто встречается внутри files/
+            val filesCache = File(app, "files")
+            if (filesCache.exists()) {
+                freed += deleteDirsByName(filesCache, dirNames)
+                freed += deleteFilesByExt(filesCache, fileExts)
             }
+            // на всякий случай пройдёмся по корню папки приложения
+            freed += deleteDirsByName(app, dirNames)
+            freed += deleteFilesByExt(app, fileExts)
         }
         return freed
     }
@@ -112,6 +128,34 @@ object FileCleaner {
                 } else {
                     freed += deleteByPatterns(sub, names)
                 }
+            }
+        }
+        return freed
+    }
+
+    private fun deleteDirsByName(base: File, names: Set<String>): Long {
+        var freed = 0L
+        base.listFiles()?.forEach { f ->
+            if (f.isDirectory) {
+                val n = f.name.lowercase()
+                if (names.contains(n)) {
+                    freed += deleteDir(f)
+                } else {
+                    freed += deleteDirsByName(f, names)
+                }
+            }
+        }
+        return freed
+    }
+
+    private fun deleteFilesByExt(base: File, exts: Set<String>): Long {
+        var freed = 0L
+        base.listFiles()?.forEach { f ->
+            if (f.isDirectory) {
+                freed += deleteFilesByExt(f, exts)
+            } else {
+                val e = f.extension.lowercase()
+                if (exts.contains(e)) freed += deleteFile(f)
             }
         }
         return freed
