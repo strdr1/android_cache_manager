@@ -28,6 +28,11 @@ jobs:
           yes | sdkmanager --licenses
           sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
+      - name: Show Gradle and SDK info
+        run: |
+          gradle --version
+          sdkmanager --list | head -n 40 || true
+
       - name: Set up Gradle (8.2.1)
         uses: gradle/actions/setup-gradle@v3
         with:
@@ -35,12 +40,13 @@ jobs:
 
       - name: Build debug APK (с повтором при сетевых сбоях)
         run: |
-          set -e
+          set -euo pipefail
+          mkdir -p build-logs
           for i in 1 2 3; do
-            echo "Attempt $i..."
-            gradle :app:assembleDebug --stacktrace --info --no-daemon && break || true
+            echo "Attempt $i..." | tee -a build-logs/gradle-output.txt
+            gradle :app:assembleDebug --stacktrace --info --no-daemon 2>&1 | tee -a build-logs/gradle-output.txt && break || true
             if [ $i -lt 3 ]; then
-              echo "Retry after short sleep"
+              echo "Retry after short sleep" | tee -a build-logs/gradle-output.txt
               sleep 15
             else
               exit 1
@@ -61,6 +67,7 @@ jobs:
           path: |
             app/build/reports/**
             **/build/outputs/logs/**
+            build-logs/**
           retention-days: 7
 
       - name: Create GitHub Release with APK
