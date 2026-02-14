@@ -1,6 +1,7 @@
 package com.example.dailycleaner
 
 import android.Manifest
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -12,6 +13,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.result.contract.ActivityResultContracts
+import android.provider.DocumentsContract
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
@@ -26,6 +28,24 @@ class MainActivity : AppCompatActivity() {
     private val storagePerm = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
         if (isGranted) Toast.makeText(this, "Доступ к файлам разрешен", Toast.LENGTH_SHORT).show()
         else Toast.makeText(this, "Доступ к файлам отклонен", Toast.LENGTH_SHORT).show()
+    }
+    private val pickDataTree = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { res ->
+        if (res.resultCode == Activity.RESULT_OK) {
+            val uri = res.data?.data ?: return@registerForActivityResult
+            val flags = (Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+            contentResolver.takePersistableUriPermission(uri, flags)
+            Prefs.setDataTreeUri(this, uri.toString())
+            Toast.makeText(this, "Подключена папка Android/data", Toast.LENGTH_SHORT).show()
+        }
+    }
+    private val pickMediaTree = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { res ->
+        if (res.resultCode == Activity.RESULT_OK) {
+            val uri = res.data?.data ?: return@registerForActivityResult
+            val flags = (Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+            contentResolver.takePersistableUriPermission(uri, flags)
+            Prefs.setMediaTreeUri(this, uri.toString())
+            Toast.makeText(this, "Подключена папка Android/media", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,6 +62,8 @@ class MainActivity : AppCompatActivity() {
         val chkData = findViewById<MaterialCheckBox>(R.id.chkData)
         val chkMedia = findViewById<MaterialCheckBox>(R.id.chkMedia)
         val chkApp = findViewById<MaterialCheckBox>(R.id.chkApp)
+        val btnPickData = findViewById<MaterialButton>(R.id.btnPickData)
+        val btnPickMedia = findViewById<MaterialButton>(R.id.btnPickMedia)
 
         val intervals = listOf(getString(R.string.interval_6h), getString(R.string.interval_12h), getString(R.string.interval_1d), getString(R.string.interval_3d), getString(R.string.interval_7d))
         spInterval.setAdapter(ArrayAdapter(this, android.R.layout.simple_list_item_1, intervals))
@@ -59,6 +81,8 @@ class MainActivity : AppCompatActivity() {
         btnPermission.setOnClickListener {
             requestAllFilesAccess()
         }
+        btnPickData.setOnClickListener { openTreePicker(initialDoc = "primary:Android/data") { pickDataTree.launch(it) } }
+        btnPickMedia.setOnClickListener { openTreePicker(initialDoc = "primary:Android/media") { pickMediaTree.launch(it) } }
 
         btnClean.setOnClickListener {
             if (!FileCleaner.hasAllFilesAccess(this)) {
@@ -117,6 +141,16 @@ class MainActivity : AppCompatActivity() {
         } else {
             storagePerm.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
         }
+    }
+
+    private fun openTreePicker(initialDoc: String, launch: (Intent) -> Unit) {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+        if (Build.VERSION.SDK_INT >= 26) {
+            val initUri = DocumentsContract.buildTreeDocumentUri("com.android.externalstorage.documents", initialDoc)
+            intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, initUri)
+        }
+        launch(intent)
     }
 
     private fun readConfigAndPersist(chkThumbs: MaterialCheckBox, chkDownload: MaterialCheckBox, chkData: MaterialCheckBox, chkMedia: MaterialCheckBox, chkApp: MaterialCheckBox): CleanerConfig {

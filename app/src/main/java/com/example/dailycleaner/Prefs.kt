@@ -12,6 +12,8 @@ object Prefs {
     private const val KEY_MEDIA = "media"
     private const val KEY_APP = "app"
     private const val KEY_INTERVAL_H = "interval_h"
+    private const val KEY_URI_DATA = "uri_data"
+    private const val KEY_URI_MEDIA = "uri_media"
 
     fun prefs(ctx: Context): SharedPreferences = ctx.getSharedPreferences(NAME, Context.MODE_PRIVATE)
 
@@ -41,4 +43,9 @@ object Prefs {
 
     fun setAutoEnabled(ctx: Context, enabled: Boolean) { prefs(ctx).edit().putBoolean(KEY_AUTO, enabled).apply() }
     fun isAutoEnabled(ctx: Context): Boolean = prefs(ctx).getBoolean(KEY_AUTO, false)
+
+    fun setDataTreeUri(ctx: Context, uri: String) { prefs(ctx).edit().putString(KEY_URI_DATA, uri).apply() }
+    fun getDataTreeUri(ctx: Context): String? = prefs(ctx).getString(KEY_URI_DATA, null)
+    fun setMediaTreeUri(ctx: Context, uri: String) { prefs(ctx).edit().putString(KEY_URI_MEDIA, uri).apply() }
+    fun getMediaTreeUri(ctx: Context): String? = prefs(ctx).getString(KEY_URI_MEDIA, null)
 }

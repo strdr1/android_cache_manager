@@ -17,4 +17,7 @@
     <string name="interval_3d">Раз в 3 дня</string>
     <string name="interval_7d">Раз в неделю</string>
     <string name="interval_label">Интервал</string>
+    <string name="pick_android_data">Выбрать Android/data</string>
+    <string name="pick_android_media">Выбрать Android/media</string>
+    <string name="auto_clean_label">Автоочистка</string>
 </resources>

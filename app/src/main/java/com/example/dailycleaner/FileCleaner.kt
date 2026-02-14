@@ -67,12 +67,22 @@ object FileCleaner {
         if (config.downloadTemps) {
             dltmp += deleteByExtensions(File(root, "Download"), setOf("tmp", "log", "cache"))
         }
-        if (hasAllFilesAccess(context)) {
-            if (config.androidDataCaches) {
-                data += cleanPerAppCache(File(root, "Android/data"))
+        val dataDir = File(root, "Android/data")
+        val mediaDir = File(root, "Android/media")
+        val canFileData = hasAllFilesAccess(context) && dataDir.exists() && dataDir.listFiles() != null
+        val canFileMedia = hasAllFilesAccess(context) && mediaDir.exists() && mediaDir.listFiles() != null
+        if (config.androidDataCaches) {
+            data += if (canFileData) {
+                cleanPerAppCache(dataDir)
+            } else {
+                SAFCleaner.cleanAndroidData(context, Prefs.getDataTreeUri(context))
             }
-            if (config.androidMediaCaches) {
-                media += deleteByPatterns(File(root, "Android/media"), setOf("cache", "temp", "tmp"))
+        }
+        if (config.androidMediaCaches) {
+            media += if (canFileMedia) {
+                deleteByPatterns(mediaDir, setOf("cache", "temp", "tmp"))
+            } else {
+                SAFCleaner.cleanAndroidMedia(context, Prefs.getMediaTreeUri(context))
             }
         }
         if (config.appCache) {
