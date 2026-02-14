@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Ежедневная очистка</string>
+    <string name="request_access">Разрешить доступ ко всем файлам</string>
+    <string name="schedule_daily">Ежедневная очистка</string>
+    <string name="clean_now">Очистить сейчас</string>
+    <string name="last_result">Последний результат: %1$s</string>
+</resources>
