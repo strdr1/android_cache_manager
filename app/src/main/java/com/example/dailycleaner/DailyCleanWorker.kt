@@ -15,8 +15,10 @@ class DailyCleanWorker(appContext: Context, params: WorkerParameters) : Coroutin
         val chanId = "cleaner"
         ensureChannel(chanId)
         setForeground(createForegroundInfo(chanId))
-        val freed = FileCleaner.cleanAccessibleJunk(applicationContext)
-        val text = "Освобождено: " + human(freed)
+        val config = Prefs.loadConfig(applicationContext)
+        val report = FileCleaner.cleanAccessibleJunk(applicationContext, config)
+        LogStore.append(applicationContext, report)
+        val text = "Освобождено: " + human(report.totalFreed)
         NotificationManagerCompat.from(applicationContext).notify(2001, NotificationCompat.Builder(applicationContext, chanId).setSmallIcon(android.R.drawable.stat_sys_download_done).setContentTitle("Очистка завершена").setContentText(text).build())
         return Result.success()
     }

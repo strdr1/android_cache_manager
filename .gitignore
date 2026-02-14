@@ -24,6 +24,8 @@ local.properties
 *.aab
 build-reports.zip
 /.reports/
+/.reports2/
+"build-reports (2).zip"
 
 # Generated
 captures/

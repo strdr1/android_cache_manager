@@ -4,7 +4,42 @@ import android.content.Context
 import android.os.Build
 import android.os.Environment
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.atomic.AtomicLong
+
+data class CleanerConfig(
+    val thumbnails: Boolean,
+    val downloadTemps: Boolean,
+    val androidDataCaches: Boolean,
+    val androidMediaCaches: Boolean,
+    val appCache: Boolean
+)
+
+data class CleanReport(
+    val timestamp: Long,
+    val totalFreed: Long,
+    val thumbnailsFreed: Long,
+    val downloadTempsFreed: Long,
+    val dataCachesFreed: Long,
+    val mediaCachesFreed: Long,
+    val appCacheFreed: Long
+) {
+    fun asCsv(): String {
+        val df = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        val ts = df.format(Date(timestamp))
+        return listOf(
+            ts,
+            totalFreed,
+            thumbnailsFreed,
+            downloadTempsFreed,
+            dataCachesFreed,
+            mediaCachesFreed,
+            appCacheFreed
+        ).joinToString(",")
+    }
+}
 
 object FileCleaner {
     fun hasAllFilesAccess(): Boolean {
@@ -13,49 +48,50 @@ object FileCleaner {
         } else true
     }
 
-    fun cleanAccessibleJunk(context: Context): Long {
-        val freed = AtomicLong(0)
+    fun cleanAccessibleJunk(context: Context, config: CleanerConfig): CleanReport {
         val root = Environment.getExternalStorageDirectory()
-        val targets = mutableListOf<File>()
-        targets.add(File(root, "DCIM/.thumbnails"))
-        targets.add(File(root, "Download"))
-        targets.add(File(root, "Pictures/.thumbnails"))
-        if (hasAllFilesAccess()) {
-            targets.add(File(root, "Android/data"))
-            targets.add(File(root, "Android/media"))
+        var thumbs = 0L
+        var dltmp = 0L
+        var data = 0L
+        var media = 0L
+        var app = 0L
+
+        if (config.thumbnails) {
+            thumbs += deleteDir(File(root, "DCIM/.thumbnails"))
+            thumbs += deleteDir(File(root, "Pictures/.thumbnails"))
         }
-        targets.forEach { file ->
-            if (file.exists()) {
-                if (file.isDirectory) {
-                    if (file.name.equals(".thumbnails", true)) {
-                        freed.addAndGet(deleteDir(file))
-                    } else if (file.absolutePath.endsWith("/Android/data")) {
-                        freed.addAndGet(cleanPerAppCache(file))
-                    } else if (file.absolutePath.endsWith("/Android/media")) {
-                        freed.addAndGet(deleteByPatterns(file, setOf("cache", "temp", "tmp")))
-                    } else if (file.name.equals("Download", true)) {
-                        freed.addAndGet(deleteByExtensions(file, setOf("tmp", "log", "cache")))
-                    }
-                } else {
-                    freed.addAndGet(deleteFile(file))
-                }
+        if (config.downloadTemps) {
+            dltmp += deleteByExtensions(File(root, "Download"), setOf("tmp", "log", "cache"))
+        }
+        if (hasAllFilesAccess()) {
+            if (config.androidDataCaches) {
+                data += cleanPerAppCache(File(root, "Android/data"))
+            }
+            if (config.androidMediaCaches) {
+                media += deleteByPatterns(File(root, "Android/media"), setOf("cache", "temp", "tmp"))
             }
         }
-        freed.addAndGet(cleanOwnCache(context))
-        return freed.get()
+        if (config.appCache) {
+            app += cleanOwnCache(context)
+        }
+        val total = thumbs + dltmp + data + media + app
+        return CleanReport(System.currentTimeMillis(), total, thumbs, dltmp, data, media, app)
     }
 
     private fun cleanPerAppCache(dataDir: File): Long {
         var freed = 0L
-        dataDir.listFiles()?.forEach { app ->
-            val cache = File(app, "cache")
-            if (cache.exists()) freed += deleteDir(cache)
+        if (dataDir.exists()) {
+            dataDir.listFiles()?.forEach { app ->
+                val cache = File(app, "cache")
+                if (cache.exists()) freed += deleteDir(cache)
+            }
         }
         return freed
     }
 
     private fun deleteByExtensions(dir: File, exts: Set<String>): Long {
         var freed = 0L
+        if (!dir.exists()) return 0L
         dir.listFiles()?.forEach {
             if (it.isDirectory) freed += deleteByExtensions(it, exts)
             else {
@@ -68,6 +104,7 @@ object FileCleaner {
 
     private fun deleteByPatterns(dir: File, names: Set<String>): Long {
         var freed = 0L
+        if (!dir.exists()) return 0L
         dir.listFiles()?.forEach { sub ->
             if (sub.isDirectory) {
                 if (names.contains(sub.name.lowercase())) {
@@ -86,6 +123,7 @@ object FileCleaner {
     }
 
     private fun deleteDir(dir: File): Long {
+        if (!dir.exists()) return 0L
         var freed = 0L
         dir.listFiles()?.forEach { child ->
             freed += if (child.isDirectory) deleteDir(child) else deleteFile(child)
