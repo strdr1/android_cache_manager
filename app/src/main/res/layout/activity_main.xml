@@ -15,12 +15,58 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="@string/schedule_daily"/>
+    <Spinner
+        android:id="@+id/spInterval"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/what_to_clean"
+        android:layout_marginTop="16dp"/>
+    <CheckBox
+        android:id="@+id/chkThumbs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/opt_thumbs"
+        android:checked="true"/>
+    <CheckBox
+        android:id="@+id/chkDownload"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/opt_download"
+        android:checked="true"/>
+    <CheckBox
+        android:id="@+id/chkData"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/opt_data"
+        android:checked="true"/>
+    <CheckBox
+        android:id="@+id/chkMedia"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/opt_media"
+        android:checked="true"/>
+    <CheckBox
+        android:id="@+id/chkApp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/opt_app"
+        android:checked="true"/>
     <Button
         android:id="@+id/btnClean"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="@string/clean_now"/>
+    <Button
+        android:id="@+id/btnLog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/open_log"/>
     <TextView
         android:id="@+id/txtResult"
         android:layout_width="match_parent"

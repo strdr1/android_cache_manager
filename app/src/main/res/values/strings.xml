@@ -4,4 +4,16 @@
     <string name="schedule_daily">Ежедневная очистка</string>
     <string name="clean_now">Очистить сейчас</string>
     <string name="last_result">Последний результат: %1$s</string>
+    <string name="what_to_clean">Что очищать</string>
+    <string name="opt_thumbs">Миниатюры (.thumbnails)</string>
+    <string name="opt_download">Временные файлы в Download</string>
+    <string name="opt_data">Кеши в Android/data</string>
+    <string name="opt_media">Кеши в Android/media</string>
+    <string name="opt_app">Кеш приложения</string>
+    <string name="open_log">Журнал</string>
+    <string name="interval_6h">Каждые 6 часов</string>
+    <string name="interval_12h">Каждые 12 часов</string>
+    <string name="interval_1d">Раз в день</string>
+    <string name="interval_3d">Раз в 3 дня</string>
+    <string name="interval_7d">Раз в неделю</string>
 </resources>

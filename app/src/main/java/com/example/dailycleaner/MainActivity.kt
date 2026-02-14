@@ -7,6 +7,8 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Button
+import android.widget.CheckBox
+import android.widget.Spinner
 import android.widget.Switch
 import android.widget.TextView
 import androidx.activity.ComponentActivity
@@ -27,19 +29,51 @@ class MainActivity : ComponentActivity() {
         val btnPermission = findViewById<Button>(R.id.btnPermission)
         val switchSchedule = findViewById<Switch>(R.id.switchSchedule)
         val btnClean = findViewById<Button>(R.id.btnClean)
+        val btnLog = findViewById<Button>(R.id.btnLog)
+        val spInterval = findViewById<Spinner>(R.id.spInterval)
+        val chkThumbs = findViewById<CheckBox>(R.id.chkThumbs)
+        val chkDownload = findViewById<CheckBox>(R.id.chkDownload)
+        val chkData = findViewById<CheckBox>(R.id.chkData)
+        val chkMedia = findViewById<CheckBox>(R.id.chkMedia)
+        val chkApp = findViewById<CheckBox>(R.id.chkApp)
+
+        spInterval.adapter = android.widget.ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, listOf(getString(R.string.interval_6h), getString(R.string.interval_12h), getString(R.string.interval_1d), getString(R.string.interval_3d), getString(R.string.interval_7d)))
+        val hoursSaved = Prefs.getIntervalHours(this)
+        spInterval.setSelection(indexForHours(hoursSaved))
+
+        val cfg = Prefs.loadConfig(this)
+        chkThumbs.isChecked = cfg.thumbnails
+        chkDownload.isChecked = cfg.downloadTemps
+        chkData.isChecked = cfg.androidDataCaches
+        chkMedia.isChecked = cfg.androidMediaCaches
+        chkApp.isChecked = cfg.appCache
 
         btnPermission.setOnClickListener {
             requestAllFilesAccess()
         }
 
         btnClean.setOnClickListener {
-            val freed = FileCleaner.cleanAccessibleJunk(this)
-            txt.text = getString(R.string.last_result, human(freed))
+            val report = FileCleaner.cleanAccessibleJunk(this, readConfigAndPersist(chkThumbs, chkDownload, chkData, chkMedia, chkApp))
+            LogStore.append(this, report)
+            txt.text = getString(R.string.last_result, human(report.totalFreed))
         }
 
         switchSchedule.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) schedule()
             else cancel()
+        }
+
+        spInterval.setOnItemSelectedListener(object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                val h = hoursForIndex(position)
+                Prefs.setIntervalHours(this@MainActivity, h)
+                if (switchSchedule.isChecked) schedule()
+            }
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+        })
+
+        btnLog.setOnClickListener {
+            startActivity(Intent(this, LogActivity::class.java))
         }
 
         if (Build.VERSION.SDK_INT >= 33) {
@@ -48,7 +82,8 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun schedule() {
-        val req = PeriodicWorkRequestBuilder<DailyCleanWorker>(24, TimeUnit.HOURS).build()
+        val hours = Prefs.getIntervalHours(this)
+        val req = PeriodicWorkRequestBuilder<DailyCleanWorker>(hours, TimeUnit.HOURS).build()
         WorkManager.getInstance(this).enqueueUniquePeriodicWork("daily_clean", ExistingPeriodicWorkPolicy.UPDATE, req)
     }
 
@@ -63,6 +98,34 @@ class MainActivity : ComponentActivity() {
                 startActivity(Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri))
             }
         }
+    }
+
+    private fun readConfigAndPersist(chkThumbs: CheckBox, chkDownload: CheckBox, chkData: CheckBox, chkMedia: CheckBox, chkApp: CheckBox): CleanerConfig {
+        val c = CleanerConfig(
+            thumbnails = chkThumbs.isChecked,
+            downloadTemps = chkDownload.isChecked,
+            androidDataCaches = chkData.isChecked,
+            androidMediaCaches = chkMedia.isChecked,
+            appCache = chkApp.isChecked
+        )
+        Prefs.saveConfig(this, c)
+        return c
+    }
+
+    private fun hoursForIndex(i: Int): Long = when (i) {
+        0 -> 6L
+        1 -> 12L
+        2 -> 24L
+        3 -> 72L
+        else -> 168L
+    }
+
+    private fun indexForHours(h: Long): Int = when (h) {
+        6L -> 0
+        12L -> 1
+        24L -> 2
+        72L -> 3
+        else -> 4
     }
 
     private fun human(bytes: Long): String {
