@@ -99,7 +99,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun readConfigAndPersist(chkThumbs: CheckBox, chkDownload: CheckBox, chkData: CheckBox, chkMedia: CheckBox, chkApp: CheckBox): CleanerConfig {
+    private fun readConfigAndPersist(chkThumbs: MaterialCheckBox, chkDownload: MaterialCheckBox, chkData: MaterialCheckBox, chkMedia: MaterialCheckBox, chkApp: MaterialCheckBox): CleanerConfig {
         val c = CleanerConfig(
             thumbnails = chkThumbs.isChecked,
             downloadTemps = chkDownload.isChecked,
