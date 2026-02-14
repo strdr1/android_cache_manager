@@ -44,7 +44,7 @@ jobs:
           mkdir -p build-logs
           for i in 1 2 3; do
             echo "Attempt $i..." | tee -a build-logs/gradle-output.txt
-            gradle :app:assembleDebug --stacktrace --info --no-daemon 2>&1 | tee -a build-logs/gradle-output.txt && break || true
+            gradle :app:assembleDebug --stacktrace --info --warning-mode all --no-daemon 2>&1 | tee -a build-logs/gradle-output.txt && break || true
             if [ $i -lt 3 ]; then
               echo "Retry after short sleep" | tee -a build-logs/gradle-output.txt
               sleep 15
@@ -52,6 +52,12 @@ jobs:
               exit 1
             fi
           done
+
+      - name: Print last Gradle log lines on failure
+        if: failure()
+        run: |
+          echo "==== tail gradle-output.txt ===="
+          tail -n 200 build-logs/gradle-output.txt || true
 
       - name: Upload debug APK artifact
         uses: actions/upload-artifact@v4
