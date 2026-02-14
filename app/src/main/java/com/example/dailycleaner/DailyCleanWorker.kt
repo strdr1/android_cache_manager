@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
-import androidx.work.ForegroundServiceType
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import android.app.NotificationChannel
@@ -32,7 +31,7 @@ class DailyCleanWorker(appContext: Context, params: WorkerParameters) : Coroutin
 
     private fun createForegroundInfo(channelId: String): ForegroundInfo {
         val notification = NotificationCompat.Builder(applicationContext, channelId).setSmallIcon(android.R.drawable.ic_menu_delete).setContentTitle("Очистка").setContentText("Удаление мусора").setOngoing(true).build()
-        return ForegroundInfo(2000, notification, if (Build.VERSION.SDK_INT >= 34) ForegroundServiceType.dataSync else 0)
+        return ForegroundInfo(2000, notification)
     }
 
     private fun human(bytes: Long): String {
