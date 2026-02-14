@@ -49,6 +49,7 @@ class MainActivity : AppCompatActivity() {
         chkData.isChecked = cfg.androidDataCaches
         chkMedia.isChecked = cfg.androidMediaCaches
         chkApp.isChecked = cfg.appCache
+        switchSchedule.isChecked = Prefs.isAutoEnabled(this)
 
         btnPermission.setOnClickListener {
             requestAllFilesAccess()
@@ -61,8 +62,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         switchSchedule.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) schedule()
-            else cancel()
+            Prefs.setAutoEnabled(this, isChecked)
+            if (isChecked) schedule() else cancel()
         }
 
         spInterval.setOnItemClickListener { _, _, position, _ ->

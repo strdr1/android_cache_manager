@@ -82,12 +82,15 @@ object FileCleaner {
         var freed = 0L
         if (!dataDir.exists()) return 0L
         val dirNames = setOf(
-            "cache","caches","tmp","temp",".tmp",".temp",
-            "okhttp","glide_cache","coil","coil_cache",
-            "image_cache","video_cache","mediacache","exoplayer",
-            "thumb","thumbs","thumbnails",".thumbnails"
+            "cache","caches",".cache",".caches",
+            "tmp","temp",".tmp",".temp",
+            "okhttp","glide","glide_cache","coil","coil_cache",
+            "image_cache","video_cache","mediacache","exoplayer","exoplayer-cache",
+            "thumb","thumbs","thumbnails",".thumbnails",
+            "logs","log","crash","reports","bugreports",
+            "httpcache","webview","webview_cache","volley","picasso","mediastore"
         )
-        val fileExts = setOf("tmp","log","cache","bak","old","part","partial","crdownload")
+        val fileExts = setOf("tmp","log","cache","bak","old","part","partial","crdownload","download","journal")
         dataDir.listFiles()?.forEach { app ->
             // классический cache
             val cache = File(app, "cache")
@@ -101,6 +104,7 @@ object FileCleaner {
             // на всякий случай пройдёмся по корню папки приложения
             freed += deleteDirsByName(app, dirNames)
             freed += deleteFilesByExt(app, fileExts)
+            freed += deleteFilesByNameContains(app, setOf("cache","tmp","temp","log","journal",".tmp",".log"))
         }
         return freed
     }
@@ -156,6 +160,21 @@ object FileCleaner {
             } else {
                 val e = f.extension.lowercase()
                 if (exts.contains(e)) freed += deleteFile(f)
+            }
+        }
+        return freed
+    }
+
+    private fun deleteFilesByNameContains(base: File, tokens: Set<String>): Long {
+        var freed = 0L
+        base.listFiles()?.forEach { f ->
+            if (f.isDirectory) {
+                freed += deleteFilesByNameContains(f, tokens)
+            } else {
+                val n = f.name.lowercase()
+                if (tokens.any { n.contains(it) }) {
+                    freed += deleteFile(f)
+                }
             }
         }
         return freed

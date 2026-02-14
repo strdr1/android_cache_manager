@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 
 object Prefs {
     private const val NAME = "settings"
+    private const val KEY_AUTO = "auto_enabled"
     private const val KEY_THUMBS = "thumbs"
     private const val KEY_DLTMP = "dltmp"
     private const val KEY_DATA = "data"
@@ -37,4 +38,7 @@ object Prefs {
 
     fun getIntervalHours(ctx: Context): Long = prefs(ctx).getLong(KEY_INTERVAL_H, 24L)
     fun setIntervalHours(ctx: Context, h: Long) { prefs(ctx).edit().putLong(KEY_INTERVAL_H, h).apply() }
+
+    fun setAutoEnabled(ctx: Context, enabled: Boolean) { prefs(ctx).edit().putBoolean(KEY_AUTO, enabled).apply() }
+    fun isAutoEnabled(ctx: Context): Boolean = prefs(ctx).getBoolean(KEY_AUTO, false)
 }
