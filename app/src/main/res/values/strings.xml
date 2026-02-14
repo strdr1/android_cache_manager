@@ -23,6 +23,7 @@
     <string name="onb_title">Необходимые разрешения</string>
     <string name="onb_notif">Разрешить уведомления</string>
     <string name="onb_all_files">Полный доступ к файлам</string>
+    <string name="onb_open_settings">Открыть настройки</string>
     <string name="onb_grant">Выдать</string>
     <string name="onb_done">Готово</string>
     <string name="onb_data">Подключить Android/data</string>
