@@ -15,6 +15,7 @@ object Prefs {
     private const val KEY_URI_DATA = "uri_data"
     private const val KEY_URI_MEDIA = "uri_media"
     private const val KEY_ONBOARD = "onboard_done"
+    private const val KEY_ASKED_ALL = "asked_all_files_once"
 
     fun prefs(ctx: Context): SharedPreferences = ctx.getSharedPreferences(NAME, Context.MODE_PRIVATE)
 
@@ -51,4 +52,7 @@ object Prefs {
     fun getMediaTreeUri(ctx: Context): String? = prefs(ctx).getString(KEY_URI_MEDIA, null)
     fun setOnboardDone(ctx: Context, done: Boolean) { prefs(ctx).edit().putBoolean(KEY_ONBOARD, done).apply() }
     fun isOnboardDone(ctx: Context): Boolean = prefs(ctx).getBoolean(KEY_ONBOARD, false)
+
+    fun setAskedAllFilesOnce(ctx: Context, asked: Boolean) { prefs(ctx).edit().putBoolean(KEY_ASKED_ALL, asked).apply() }
+    fun wasAskedAllFilesOnce(ctx: Context): Boolean = prefs(ctx).getBoolean(KEY_ASKED_ALL, false)
 }

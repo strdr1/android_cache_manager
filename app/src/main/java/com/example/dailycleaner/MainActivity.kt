@@ -3,6 +3,7 @@ package com.example.dailycleaner
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.ActivityNotFoundException
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -120,6 +121,10 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, OnboardingActivity::class.java))
             return
         }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !android.os.Environment.isExternalStorageManager() && !Prefs.wasAskedAllFilesOnce(this)) {
+            Prefs.setAskedAllFilesOnce(this, true)
+            requestAllFilesAccess()
+        }
         ensureDataMediaAccessIfNeeded()
     }
 
@@ -175,9 +180,23 @@ class MainActivity : AppCompatActivity() {
             intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, initUri)
         }
         try {
-            intent.setPackage("com.android.documentsui")
-        } catch (_: Exception) { /* ignore */ }
-        launch(intent)
+            // Не ограничиваем пакет — на некоторых прошивках нет com.android.documentsui
+            if (intent.resolveActivity(packageManager) == null) {
+                val fallback = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).addFlags(intent.flags)
+                if (Build.VERSION.SDK_INT >= 26) {
+                    val initUri = DocumentsContract.buildTreeDocumentUri("com.android.externalstorage.documents", initialDoc)
+                    fallback.putExtra(DocumentsContract.EXTRA_INITIAL_URI, initUri)
+                }
+                launch(fallback)
+            } else {
+                launch(intent)
+            }
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(this, "Нет системного файлового менеджера для выбора папки", Toast.LENGTH_LONG).show()
+            requestAllFilesAccess()
+        } catch (_: Exception) {
+            Toast.makeText(this, "Не удалось открыть выбор папки", Toast.LENGTH_SHORT).show()
+        }
     }
 
     // онбординг берет на себя запрос прав
